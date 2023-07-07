@@ -1,35 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float moveSpeed;
-    float hAxis;
-    float vAxis;
+    Animator anim;
+    Camera playerCamera;
+    CharacterController controller;
 
-    Vector3 moveVec;
-    Rigidbody rigid;
-    
+    public float speed = 5f;
+    public float runSpeed = 8f;
+
+    public bool toggleCameraRotation;
+
+    public float smoothness = 10f;
+
     void Awake()
     {
-        rigid = GetComponent<Rigidbody>();
-    }
-
-    void InputButton() {
-        hAxis = Input.GetAxisRaw("Horizontal");
-        vAxis = Input.GetAxisRaw("Vertical");
+        anim = GetComponent<Animator>();
+        playerCamera = Camera.main;
+        controller = GetComponent<CharacterController>();
     }
 
     void Update()
     {
-        InputButton();
-        Move();
+        if(Input.GetKey(KeyCode.LeftAlt))
+        {
+            toggleCameraRotation = true; // 둘러보기 활성화
+        } else
+        {
+            toggleCameraRotation = false; // 둘러보기 비활성화
+        }
+    }
+    void LateUpdate()
+    {
+        if(toggleCameraRotation != true)
+        {
+            Vector3 playerRotate = Vector3.Scale(playerCamera.transform.forward, new Vector3(1, 0, 1));
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(playerRotate), Time.deltaTime * smoothness);
+        }
     }
 
-    void Move() {
-        moveVec = new Vector3(hAxis, 0 ,vAxis).normalized;
-        rigid.velocity = moveVec * moveSpeed;
-        transform.LookAt(transform.position + moveVec);
-    }
 }
